@@ -1,47 +1,25 @@
 import streamlit as st
-from src.retriever import HybridRetriever, BM25_PKL, EMBEDDING_NPY, META_JSONL
-from src.rerank import Reranker
+from src.qa_service import QASystem
 
+# 页面配置
 st.set_page_config(
     page_title="TechDoc QA",
     page_icon="📚",
     layout="wide"
 )
 
+# 标题和说明
 st.title("📚 技术文档问答系统")
 st.caption("基于混合检索（RRF）+ 重排序（CrossEncoder）")
 
 @st.cache_resource
-def load_retriever() -> HybridRetriever:
+def load_qa_system() -> QASystem:
     """
-    加载混合检索器
+    加载问答系统实例
     """
-    return HybridRetriever(
-        bm25_path=BM25_PKL,
-        embed_path=EMBEDDING_NPY,
-        meta_path=META_JSONL,
-        vector_weight=0.6,
-        bm25_weight=0.4,
-        k=60
-    )
+    return QASystem()
 
-@st.cache_resource
-def load_reranker() -> Reranker:
-    """
-    加载重排序器
-    """
-    return Reranker()
-
-def search_pipeline(query: str, retrieve_k: int = 20, final_k: int = 5):
-    # 创建检索器和重排序器实例
-    retriever = load_retriever()
-    reranker = load_reranker()
-
-    # 混合检索 + 重排序
-    candidates = retriever.search(query, top_k=retrieve_k)
-    results = reranker.rerank(query, candidates, top_k=final_k)
-    return results
-
+# 侧边栏参数设置
 with st.sidebar:
     st.header("参数设置")
     retrieve_k = st.slider("检索候选数", min_value=5, max_value=50, value=20, step=5)
@@ -50,16 +28,29 @@ with st.sidebar:
 
 query = st.text_input("请输入您的问题：")
 
-if st.button("开始检索", type="primary"):
+if st.button("确定", type="primary"):
     if not query.strip():
-        st.warning("请输入问题后再检索。")
+        st.warning("输入的内容不能为空。")
     else:
-        with st.spinner("努力检索中, 请稍侯..."):
-            docs = search_pipeline(query, retrieve_k=retrieve_k, final_k=final_k)
+        qa = load_qa_system()
+        # 更新参数
+        qa.retrieve_k = retrieve_k
+        qa.final_k = final_k
+        qa.context_max_chars = max(show_content_chars * final_k, 1000)
 
-        st.success(f"检索完成！共找到 {len(docs)} 条相关文档。")
+        # 生成答案
+        with st.spinner("模型思考中, 请稍侯..."):
+            answer_stream, reranked = qa.answer(query)
+            answer_placeholder = st.empty()
+            answer_text = ""
+            for msg in answer_stream:
+                answer_text += msg.content
+                answer_placeholder.write(answer_text, unsafe_allow_html=True)
+            st.success("回答生成完毕！")
 
-        for i, doc in enumerate(docs, 1):
+        # 显示相关文档
+        st.subheader("参考文档")
+        for i, doc in enumerate(reranked, 1):
             title = doc.get("title", "Unknown")
             page = doc.get("page", "N/A")
             source = doc.get("source", "N/A")
