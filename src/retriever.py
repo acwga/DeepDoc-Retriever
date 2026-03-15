@@ -19,13 +19,15 @@ class HybridRetriever:
                  meta_path: Path,
                  model_name: str = "BAAI/bge-small-en-v1.5",
                  vector_weight: float = 0.5,
-                 bm25_weight: float = 0.5):
+                 bm25_weight: float = 0.5,
+                 k: int = 60):
         self.bm25_path = bm25_path
         self.embed_path = embed_path
         self.meta_path = meta_path
         self.model_name = model_name
         self.vector_weight = vector_weight
         self.bm25_weight = bm25_weight
+        self.k = k
         
         self.model = None
         self.bm25 = None
@@ -94,7 +96,6 @@ class HybridRetriever:
             row = dict(self.meta_rows[i])
             row["id"] = row["chunk_id"]
             row["content"] = row["text"]
-            row["score"] = float(sims[i])
             results.append(row)
         return results
     
@@ -117,27 +118,7 @@ class HybridRetriever:
             row = dict(self.chunks[i])
             row["id"] = row["chunk_id"]
             row["content"] = row["text"]
-            row["score"] = float(scores[i])
             results.append(row)
-        return results
-    
-    def _minmax_normalize(self, results: List[Dict]) -> List[Dict]:
-        """
-        对得分进行归一化处理
-        """
-        if not results:
-            return results
-        
-        scores = [r["score"] for r in results]
-        s_min, s_max = min(scores), max(scores)
-
-        if s_max == s_min:
-            for r in results:
-                r["score"] = 1.0
-            return results
-        
-        for r in results:
-            r["score"] = (r["score"] - s_min) / (s_max - s_min)
         return results
     
     def _hybrid_search(self, query: str, top_k: int = 5) -> List[Dict]:
@@ -145,39 +126,41 @@ class HybridRetriever:
         混合检索
         """
         # 向量检索
-        if self.model:
-            vector_results = self._vector_search(query, top_k * 2)
-            vector_results = self._minmax_normalize(vector_results)
-        else:
-            vector_results = []
+        vector_results = self._vector_search(query, top_k * 2) if self.model else []
 
         # BM25检索
-        if self.bm25:
-            bm25_results = self._bm25_search(query, top_k * 2)
-            bm25_results = self._minmax_normalize(bm25_results)
-        else:
-            bm25_results = []
+        bm25_results = self._bm25_search(query, top_k * 2) if self.bm25 else []
         
         # 合并结果
         combined = {}
 
-        for doc in vector_results:
+        for rank, doc in enumerate(vector_results, 1):
             doc_id = doc.get("id", doc["content"][:50])
-            combined[doc_id] = {**doc, "vector_score": doc["score"], "bm25_score": 0.0}
+            combined[doc_id] = {
+                **doc,
+                "vector_rank": rank,
+                "bm25_rank": None
+            }
 
-        for doc in bm25_results:
+        for rank, doc in enumerate(bm25_results, 1):
             doc_id = doc.get("id", doc["content"][:50])
             if doc_id in combined:
-                combined[doc_id]["bm25_score"] = doc["score"]
+                combined[doc_id]["bm25_rank"] = rank
             else:
-                combined[doc_id] = {**doc, "vector_score": 0.0, "bm25_score": doc["score"]}
+                combined[doc_id] = {
+                    **doc,
+                    "vector_rank": None,
+                    "bm25_rank": rank
+                }
 
         # 计算综合分数
         for _, doc in combined.items():
-            doc["score"] = self.vector_weight * doc["vector_score"] + self.bm25_weight * doc["bm25_score"]
+            v_score = self.vector_weight * 1.0 / (self.k + doc["vector_rank"]) if doc["vector_rank"] else 0.0
+            b_score = self.bm25_weight * 1.0 / (self.k + doc["bm25_rank"]) if doc["bm25_rank"] else 0.0
+            doc["rrf_score"] = v_score + b_score
 
         # 排序并返回前K个结果
-        sorted_docs = sorted(combined.values(), key=lambda x: x["score"], reverse=True)
+        sorted_docs = sorted(combined.values(), key=lambda x: x["rrf_score"], reverse=True)
         return sorted_docs[:top_k]
     
     def search(self, query: str, top_k: int = 5) -> List[Dict]:
@@ -200,6 +183,6 @@ if __name__ == "__main__":
 
     print(f"Query: {query}")
     for i, doc in enumerate(results, 1):
-        print(f"[{i}] score: {doc['score']}, v: {doc['vector_score']:.4f}, b: {doc['bm25_score']:.4f}")
+        print(f"[{i}] score: {doc['rrf_score']}, v: {doc['vector_rank']}, b: {doc['bm25_rank']}")
         print(f"    title: {doc.get('title')}, page: {doc.get('page')}, source: {doc.get('source')}")
         print(f"    content: {doc['content'][:100]}...")
