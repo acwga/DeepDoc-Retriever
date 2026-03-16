@@ -2,6 +2,7 @@ import re
 import numpy as np
 import json
 import pickle
+import hashlib
 from pathlib import Path
 from typing import List, Dict
 from sentence_transformers import SentenceTransformer
@@ -34,6 +35,7 @@ class HybridRetriever:
         self.embeddings = None
         self.chunks = []
         self.meta_rows = []
+        self.md5_to_meta = {}
 
         self._load_all()
 
@@ -62,7 +64,10 @@ class HybridRetriever:
                 line = line.strip()
                 if not line:
                     continue
-                self.meta_rows.append(json.loads(line))
+                meta = json.loads(line)
+                self.meta_rows.append(meta)
+                # 建立md5到元数据的映射
+                self.md5_to_meta[meta["md5_id"]] = meta
 
         if len(self.meta_rows) != self.embeddings.shape[0]:
             raise RuntimeError(
@@ -93,9 +98,12 @@ class HybridRetriever:
         # 获取结果
         results = []
         for i in top_idx:
-            row = dict(self.meta_rows[i])
-            row["id"] = row["chunk_id"]
-            row["content"] = row["text"]
+            # 通过索引获取对应的元数据
+            meta = self.meta_rows[i]
+            row = dict(meta)
+            row["id"] = meta["chunk_id"]
+            row["md5_id"] = meta["md5_id"]
+            row["content"] = meta["text"]
             results.append(row)
         return results
     
@@ -118,6 +126,7 @@ class HybridRetriever:
             row = dict(self.chunks[i])
             row["id"] = row["chunk_id"]
             row["content"] = row["text"]
+            row["md5_id"] = hashlib.md5(row["text"].encode("utf-8")).hexdigest()
             results.append(row)
         return results
     
@@ -135,7 +144,7 @@ class HybridRetriever:
         combined = {}
 
         for rank, doc in enumerate(vector_results, 1):
-            doc_id = doc.get("id", doc["content"][:50])
+            doc_id = doc.get("md5_id", doc["content"][:50])
             combined[doc_id] = {
                 **doc,
                 "vector_rank": rank,
@@ -143,7 +152,7 @@ class HybridRetriever:
             }
 
         for rank, doc in enumerate(bm25_results, 1):
-            doc_id = doc.get("id", doc["content"][:50])
+            doc_id = doc.get("md5_id", doc["content"][:50])
             if doc_id in combined:
                 combined[doc_id]["bm25_rank"] = rank
             else:
