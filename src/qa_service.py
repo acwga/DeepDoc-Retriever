@@ -1,8 +1,8 @@
 import os
-from typing import List, Dict, Iterator
+from typing import List, Dict, Iterator, Optional
 from langchain_community.chat_models import ChatTongyi
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.messages import AIMessage
+from langchain_core.messages import AIMessage, HumanMessage
 from src.retriever import HybridRetriever, BM25_PKL, EMBEDDING_NPY, META_JSONL
 from src.rerank import Reranker
 
@@ -108,22 +108,40 @@ class QASystem:
         return "\n".join(blocks)
     
     
-    def _generate_answer(self, query: str, docs: List[Dict]) -> Iterator[AIMessage]:
+    def _generate_answer(self, query: str, docs: List[Dict], 
+                         history: Optional[List[Dict]] = None) -> Iterator[AIMessage]:
         """
         生成答案
         """
         context = self._build_context(docs)
+        # 构造历史消息
+        # 先把系统消息分离出来, 放在最前面
         messages = self.answer_prompt.format_messages(query=query, context=context)
+        if history:
+            system_msg = messages[0]
+            user_msgs = messages[1:]
+            # 重构消息列表: 系统消息 + 历史消息 + 当前用户消息
+            messages = [system_msg]
+            for msg in history:
+                if msg["role"] == "user":
+                    messages.append(HumanMessage(content=msg["content"]))
+                elif msg["role"] == "assistant":
+                    messages.append(AIMessage(content=msg["content"]))
+            # 添加当前消息
+            messages.extend(user_msgs)
+            
         return self.llm.stream(messages)
     
-    def answer(self, query: str) -> tuple[Iterator[AIMessage], List[Dict]]:
+    def answer(self, query: str, 
+               history: Optional[List[Dict]] = None
+               ) -> tuple[Iterator[AIMessage], List[Dict]]:
         """
         返回答案生成器
         """
         query = self._rewrite_query(query)
         candidates = self._retrieve_docs(query)
         reranked = self._rerank_docs(query, candidates)
-        return self._generate_answer(query, reranked), reranked
+        return self._generate_answer(query, reranked, history), reranked
 
 if __name__ == "__main__":
     qa = QASystem()

@@ -47,7 +47,7 @@ if st.button("确定", type="primary"):
 
         # 生成答案
         with st.spinner("模型思考中, 请稍侯..."):
-            answer_stream, reranked = qa.answer(query)
+            answer_stream, reranked = qa.answer(query, history=st.session_state["history"])
             answer_placeholder = st.empty()
             answer_text = ""
             for msg in answer_stream:
