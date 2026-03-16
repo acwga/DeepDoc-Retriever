@@ -19,6 +19,10 @@ def load_qa_system() -> QASystem:
     """
     return QASystem()
 
+# 初始化历史对话
+if "history" not in st.session_state:
+    st.session_state["history"] = []
+
 # 侧边栏参数设置
 with st.sidebar:
     st.header("参数设置")
@@ -38,6 +42,9 @@ if st.button("确定", type="primary"):
         qa.final_k = final_k
         qa.context_max_chars = max(show_content_chars * final_k, 1000)
 
+        # 将用户问题添加到历史对话
+        st.session_state["history"].append({"role": "user", "content": query})
+
         # 生成答案
         with st.spinner("模型思考中, 请稍侯..."):
             answer_stream, reranked = qa.answer(query)
@@ -46,7 +53,17 @@ if st.button("确定", type="primary"):
             for msg in answer_stream:
                 answer_text += msg.content
                 answer_placeholder.write(answer_text, unsafe_allow_html=True)
+            # 将模型回答添加到历史对话
+            st.session_state["history"].append({"role": "assistant", "content": answer_text})
             st.success("回答生成完毕！")
+
+        # 显示历史对话
+        st.subheader("历史对话")
+        for msg in st.session_state["history"]:
+            if msg["role"] == "user":
+                st.markdown(f"**用户：** {msg['content']}")
+            else:
+                st.markdown(f"**模型：** {msg['content']}")
 
         # 显示相关文档
         st.subheader("参考文档")
