@@ -13,10 +13,10 @@ class QASystem:
     """
     
     def __init__(self,
-                 retrieve_k: int = 20,
+                 retrieve_k: int = 30,
                  final_k : int = 5,
-                 vector_weight: float = 0.6,
-                 bm25_weight: float = 0.4,
+                 vector_weight: float = 0.7,
+                 bm25_weight: float = 0.3,
                  k: int = 60,
                  context_max_chars: int = 2000
                  ):
@@ -39,11 +39,13 @@ class QASystem:
         self.reranker = Reranker()
         self.rewrite_prompt = ChatPromptTemplate.from_messages([
             (
-                "system",
-                "你是一个技术文档检索助手。请将用户的问题改写为更适合技术文档检索的表达，使用专业术语和规范表述。"
-                "不要刻意替换技术词汇，只在有必要时进行澄清或标准化。"
-                "改写后将问题翻译成英文，以便与英文文档匹配。"
-                "只输出最终英文查询，不要输出其他内容。"
+                "system", 
+                "你是一个检索助手。将用户问题改写成更适合英文技术文档检索的查询。"
+                "要求：\n"
+                "1. 保持原问题的核心意图\n"
+                "2. 使用英文技术文档中常见的术语\n"
+                "3. 去掉多余的语气词和修饰词\n"
+                "4. 只输出英文查询，不要解释"
             ),
             ("human", "{query}")
         ])
@@ -129,11 +131,12 @@ class QASystem:
                     messages.append(AIMessage(content=msg["content"]))
             # 添加当前消息
             messages.extend(user_msgs)
-            
+
         return self.llm.stream(messages)
     
     def answer(self, query: str, 
-               history: Optional[List[Dict]] = None
+               history: Optional[List[Dict]] = None,
+               eval_rerank: bool = False
                ) -> tuple[Iterator[AIMessage], List[Dict]]:
         """
         返回答案生成器
@@ -141,6 +144,9 @@ class QASystem:
         query = self._rewrite_query(query)
         candidates = self._retrieve_docs(query)
         reranked = self._rerank_docs(query, candidates)
+        # 如果是评测重排序效果, 则直接返回重排序结果, 不生成答案
+        if eval_rerank:
+            return None, reranked
         return self._generate_answer(query, reranked, history), reranked
 
 if __name__ == "__main__":
