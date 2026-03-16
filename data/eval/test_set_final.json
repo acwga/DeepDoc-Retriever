@@ -1,0 +1,252 @@
+[
+  {
+    "id": "q001",
+    "query": "当解析多部分（multipart）消息时，如果遇到 NoBoundaryInMultipartDefect、StartBoundaryNotFoundDefect 或 CloseBoundaryNotFoundDefect 缺陷，应如何正确处理这些边界缺失或不匹配的问题？",
+    "relevant_docs": "python_docs__docs-pdf__library__p1170__c4"
+  },
+  {
+    "id": "q002",
+    "query": "Python 中函数注解的语法和最佳实践是什么？",
+    "relevant_docs": "python_docs__docs-pdf__faq__p96__c1"
+  },
+  {
+    "id": "q003",
+    "query": "为什么使用 PyEval_SetTrace() 注册的跟踪函数无法接收到与 C 函数对象调用相关的事件（如 PyTrace_C_CALL、PyTrace_C_EXCEPTION 或 PyTrace_C_RETURN）？",
+    "relevant_docs": "python_docs__docs-pdf__c-api__p203__c1"
+  },
+  {
+    "id": "q004",
+    "query": "如何使用 Argument Clinic 处理 C 文件？",
+    "relevant_docs": "python_docs__docs-pdf__howto-clinic__p3__c1"
+  },
+  {
+    "id": "q005",
+    "query": "当 workers 参数设置为 0 或负数时，Python 的 py_compile 模块会如何处理？",
+    "relevant_docs": "python_docs__docs-pdf__library__p2002__c1"
+  },
+  {
+    "id": "q006",
+    "query": "为什么在尝试对元组中的可变元素（如列表）使用 `+=` 操作时，仍然会引发 `TypeError: 'tuple' object does not support item assignment`？",
+    "relevant_docs": "python_docs__docs-pdf__faq__p37__c3"
+  },
+  {
+    "id": "q007",
+    "query": "为什么推荐使用带时区信息的 datetime 对象（aware datetime）而不是朴素 datetime 对象（naive datetime）来表示 UTC 时间？",
+    "relevant_docs": "python_docs__docs-pdf__library__p231__c2"
+  },
+  {
+    "id": "q008",
+    "query": "在 Python 3.10.12 中，将 TarInfo.uname 或 TarInfo.gname 设置为 None 对 tar 文件提取操作有何影响？",
+    "relevant_docs": "python_docs__docs-pdf__library__p586__c2"
+  },
+  {
+    "id": "q009",
+    "query": "如果新子解释器创建失败，该函数会返回什么值？",
+    "relevant_docs": "python_docs__docs-pdf__c-api__p200__c2"
+  },
+  {
+    "id": "q010",
+    "query": "在多线程环境中，为什么必须使用 loop.call_soon_threadsafe() 而不是 loop.call_soon() 来调度回调？",
+    "relevant_docs": "python_docs__docs-pdf__library__p1009__c3"
+  },
+  {
+    "id": "q011",
+    "query": "当向流中写入输出时，newline 参数的不同取值如何影响 '\\n' 字符的换行符转换行为？",
+    "relevant_docs": "python_docs__docs-pdf__library__p709__c2"
+  },
+  {
+    "id": "q012",
+    "query": "在 Unix 系统上，asyncore.file_wrapper 类如何处理传入的文件对象或具有 fileno() 方法的对象？",
+    "relevant_docs": "python_docs__docs-pdf__library__p2059__c1"
+  },
+  {
+    "id": "q013",
+    "query": "如何在 Python 中使用 tkinter.ttk 获取当前正在使用的主题名称？",
+    "relevant_docs": "python_docs__docs-pdf__library__p1549__c1"
+  },
+  {
+    "id": "q014",
+    "query": "PyList_GetItem() 和 PyList_SET_ITEM() 在使用时有何区别，特别是在引用计数管理方面？",
+    "relevant_docs": "python_docs__docs-pdf__c-api__p336__c2"
+  },
+  {
+    "id": "q015",
+    "query": "当调用 SMTP.connect(host='localhost', port=0) 时，如果主机名以冒号和数字结尾（例如 'example.com:587'），端口号是如何被解析和使用的？",
+    "relevant_docs": "python_docs__docs-pdf__library__p1380__c3"
+  },
+  {
+    "id": "q016",
+    "query": "如何使用该类中的严格性开关来加强比Netscape默认策略更宽松的Cookie处理规则？",
+    "relevant_docs": "python_docs__docs-pdf__library__p1411__c1"
+  },
+  {
+    "id": "q017",
+    "query": "当字符串作为左操作数用于‘%’运算符时，扩展模块应如何定义其转换行为？",
+    "relevant_docs": "python_docs__docs-pdf__reference__p75__c2"
+  },
+  {
+    "id": "q018",
+    "query": "如何配置 logging.basicConfig 以确保每次运行脚本时日志文件都是全新的，而不是追加之前的内容？",
+    "relevant_docs": "python_docs__docs-pdf__howto-logging__p4__c2"
+  },
+  {
+    "id": "q019",
+    "query": "Python 1.6.1 版本使用的是哪种许可证协议？",
+    "relevant_docs": "python_docs__docs-pdf__library__p2164__c1"
+  },
+  {
+    "id": "q020",
+    "query": "为什么从 Python 3.9 开始，contextlib.AbstractAsyncContextManager 支持下标操作（如 []）？",
+    "relevant_docs": "python_docs__docs-pdf__library__p1597__c2"
+  },
+  {
+    "id": "q021",
+    "query": "为什么 namedtuple 的方法和属性名要以下划线开头？",
+    "relevant_docs": "python_docs__docs-pdf__library__p277__c3"
+  },
+  {
+    "id": "q022",
+    "query": "在 Python 的 codecs 模块中，lookup() 和 lookup_error() 函数分别用于什么目的？",
+    "relevant_docs": "python_docs__docs-pdf__library__p2250__c5"
+  },
+  {
+    "id": "q023",
+    "query": "假设参会者对 Python 和 Ruby 演讲的偏好比例保持不变（65% 偏好 Python），在样本量为 750 的情况下，Python 会议室不超过其容量限制的概率是多少？",
+    "relevant_docs": "python_docs__docs-pdf__library__p408__c4"
+  },
+  {
+    "id": "q024",
+    "query": "Python 中的文件对象有哪些类型，它们的接口是在哪个模块中定义的？",
+    "relevant_docs": "python_docs__docs-pdf__tutorial__p129__c3"
+  },
+  {
+    "id": "q025",
+    "query": "在Python 3.10.19的音频处理模块中，如何使用effects子包中的reverse.py对音频文件进行反转处理？",
+    "relevant_docs": "python_docs__docs-pdf__tutorial__p61__c1"
+  },
+  {
+    "id": "q026",
+    "query": "如何使用 `parse_qs()` 或 `parse_qsl()` 反向解析由 `urllib.parse.urlencode()` 生成的查询字符串？",
+    "relevant_docs": "python_docs__docs-pdf__library__p1350__c6"
+  },
+  {
+    "id": "q027",
+    "query": "为什么在使用 Mock 对象时，即使启用了 spec，方法上的拼写错误（如 `assret_called_with`）仍不会引发 AttributeError？",
+    "relevant_docs": "python_docs__docs-pdf__library__p1696__c2"
+  },
+  {
+    "id": "q028",
+    "query": "在 Python 3.10.19 的 tkinter 模块中，如何使用 tkinter.colorchooser 让用户选择颜色？",
+    "relevant_docs": "python_docs__docs-pdf__library__p1514__c1"
+  },
+  {
+    "id": "q029",
+    "query": "在 Python 3.8 中新增的 headers 参数与之前版本中的 use_builtin_types 和 use_datetime 标志在处理 HTTP/HTTPS 传输时有何区别和联系？",
+    "relevant_docs": "python_docs__docs-pdf__library__p1415__c2"
+  },
+  {
+    "id": "q030",
+    "query": "在Python中，多重赋值语句如何确保右侧表达式在赋值前全部被求值？",
+    "relevant_docs": "python_docs__docs-pdf__tutorial__p22__c2"
+  },
+  {
+    "id": "q031",
+    "query": "为什么字典中重复的键不会被检测到，而是保留最后一个值？",
+    "relevant_docs": "python_docs__docs-pdf__reference__p78__c4"
+  },
+  {
+    "id": "q032",
+    "query": "为什么对象的内存分配和初始化应由 tp_new 而不是该函数负责？",
+    "relevant_docs": "python_docs__docs-pdf__c-api__p279__c3"
+  },
+  {
+    "id": "q033",
+    "query": "当使用 extractall() 提取归档文件时，如果因异常而中止操作，是否会自动清理已部分提取的文件？",
+    "relevant_docs": "python_docs__docs-pdf__library__p588__c1"
+  },
+  {
+    "id": "q034",
+    "query": "在Python 2中，如何确保处理文本的API能兼容unicode类型，同时处理二进制数据的API能与Python 3中的bytes类型（在Python 2中作为str的子集并用作bytes的别名）正确协作？",
+    "relevant_docs": "python_docs__docs-pdf__howto-pyporting__p4__c4"
+  },
+  {
+    "id": "q035",
+    "query": "在 Python 3.10 中，条件表达式的语法结构和运算优先级是怎样的？",
+    "relevant_docs": "python_docs__docs-pdf__reference__p94__c1"
+  },
+  {
+    "id": "q036",
+    "query": "在Python字符串字面量中包含的井号（#）字符会被解释为注释吗？",
+    "relevant_docs": "python_docs__docs-pdf__tutorial__p15__c2"
+  },
+  {
+    "id": "q037",
+    "query": "如何在Shell中使用Module Browser查看当前编辑器文件中的函数、类和方法？",
+    "relevant_docs": "python_docs__docs-pdf__library__p1554__c4"
+  },
+  {
+    "id": "q038",
+    "query": "在使用 Python 的 xml.parsers.expat 解析 XML 时，为什么会同时出现多个错误码为 1281 的不同错误（如 XML_ERROR_BINARY_ENTITY_REF、XML_ERROR_CANT_CHANGE_FEATURE_ONCE_PARSING 和 XML_ERROR_ENTITY_DECLARED_IN_PE）？",
+    "relevant_docs": "python_docs__docs-pdf__library__p2307__c2"
+  },
+  {
+    "id": "q039",
+    "query": "Python 3.10.19 中 tracemalloc 使用的哈希表实现基于哪个开源项目？",
+    "relevant_docs": "python_docs__docs-pdf__c-api__p320__c1"
+  },
+  {
+    "id": "q040",
+    "query": "在 Python 3.10.19 的 C API 中，为什么只有 GenericAlias 被暴露给 C 代码，而 Union 没有被暴露？",
+    "relevant_docs": "python_docs__docs-pdf__c-api__p183__c1"
+  },
+  {
+    "id": "q041",
+    "query": "在 Python 3.7 及更高版本中，如何使用 register_function() 作为装饰器，并确保函数以指定名称注册？",
+    "relevant_docs": "python_docs__docs-pdf__library__p1426__c2"
+  },
+  {
+    "id": "q042",
+    "query": "在 Python 3.10.19 的模式匹配中，为什么下划线 '_' 被视为软关键字，且仅在模式内有效？",
+    "relevant_docs": "python_docs__docs-pdf__reference__p119__c1"
+  },
+  {
+    "id": "q043",
+    "query": "如何使用 Python 的 sorted() 函数对列表进行升序和降序排序？",
+    "relevant_docs": "python_docs__docs-pdf__howto-functional__p12__c1"
+  },
+  {
+    "id": "q044",
+    "query": "在 Python 3.8 中，为什么使用 functools.partial 包装的协程函数会被 inspect.iscoroutinefunction() 识别为协程函数？",
+    "relevant_docs": "python_docs__docs-pdf__library__p1891__c4"
+  },
+  {
+    "id": "q045",
+    "query": "asyncio.Condition 的 notify_all() 方法与 threading.Condition 的 notify_all() 方法在使用上有何区别？",
+    "relevant_docs": "python_docs__docs-pdf__library__p2261__c2"
+  },
+  {
+    "id": "q046",
+    "query": "如何在另一个应用程序中嵌入Python解释器？",
+    "relevant_docs": "python_docs__docs-pdf__extending__p69__c4"
+  },
+  {
+    "id": "q047",
+    "query": "在 Python 3.3 之前，ctypes.wstring_at() 函数在出错时会抛出什么异常？",
+    "relevant_docs": "python_docs__docs-pdf__library__p861__c3"
+  },
+  {
+    "id": "q048",
+    "query": "如何在堆分配类型的方法中通过 PyType_GetModuleState() 获取模块级别的状态？",
+    "relevant_docs": "python_docs__docs-pdf__howto-clinic__p18__c4"
+  },
+  {
+    "id": "q049",
+    "query": "在Python中，相比于使用%操作符进行字符串格式化，使用f-string、str.format()或模板字符串各有哪些优缺点？",
+    "relevant_docs": "python_docs__docs-pdf__library__p81__c2"
+  },
+  {
+    "id": "q050",
+    "query": "为什么使用 RawConfigParser 时无法进行插值，而 ConfigParser 可以？",
+    "relevant_docs": "python_docs__docs-pdf__library__p614__c1"
+  }
+]
