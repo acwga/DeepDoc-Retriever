@@ -32,6 +32,7 @@ DeepDoc-Retriever/
 │   ├── qa_service.py      # 问答系统主逻辑
 │   ├── retriever.py       # 混合检索实现
 │   ├── rerank.py          # 重排序实现
+|   ├── config.py          # 存放提示词
 |   └── eval_retrieval.py  # 检索评估评估
 ├── data/
 │   ├── raw/               # 原始PDF/TXT文档
