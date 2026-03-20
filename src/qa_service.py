@@ -1,11 +1,11 @@
 import os
-from typing import List, Dict, Iterator, Optional
+from typing import List, Dict, Tuple, Iterator, Optional
 from langchain_community.chat_models import ChatTongyi
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import AIMessage, HumanMessage
 from src.retriever import HybridRetriever, BM25_PKL, EMBEDDING_NPY, META_JSONL
 from src.rerank import Reranker
-
+from src.prompts import QUERY_REWRITE_PROMPT, ANSWER_PROMPT
 
 class QASystem:
     """
@@ -37,42 +37,43 @@ class QASystem:
             k=self.k
         )
         self.reranker = Reranker()
-        self.rewrite_prompt = ChatPromptTemplate.from_messages([
-            (
-                "system", 
-                "你是一个检索助手。将用户问题改写成更适合英文技术文档检索的查询。"
-                "要求：\n"
-                "1. 保持原问题的核心意图\n"
-                "2. 使用英文技术文档中常见的术语\n"
-                "3. 去掉多余的语气词和修饰词\n"
-                "4. 只输出英文查询，不要解释"
-            ),
-            ("human", "{query}")
-        ])
-        self.answer_prompt = ChatPromptTemplate.from_messages([
-            (
-                "system",
-                """
-                你是一个技术文档问答助手。
-                请只根据下方提供的文档内容回答用户问题。
-                如果内容不足，请明确说明无法回答。
+        self.rewrite_prompt = QUERY_REWRITE_PROMPT
+        self.answer_prompt = ANSWER_PROMPT
 
-                要求：
-                1. 答案简明、准确。
-                2. 在答案中引用文档编号，如 [1], [2]。
-                3. 答案后添加“参考文档”部分，列出用到的编号。
-                4. 若用户没有明确要求，请用中文回答。 """
-            ),
-            ("human", "用户问题：{query}\n文档内容：{context}")
-        ])
+    def _format_history_for_rewrite(self, history: Optional[List[Dict]], max_turns: int = 5) -> str:
+        """
+        将历史对话格式化为改写用的字符串
+        """
+        if not history:
+            return "暂无历史对话"
+        
+        recent_history = history[-max_turns * 2:]
+        
+        formatted = []
+        for msg in recent_history:
+            role = "用户" if msg["role"] == "user" else "助手"
+            formatted.append(f"{role}: {msg['content']}")
+        
+        return "\n".join(formatted)
 
-    def _rewrite_query(self, query: str) -> str:
+    def _rewrite_query(self, query: str, history: Optional[List[Dict]] = None) -> str:
         """
         查询重写
         """
-        messages = self.rewrite_prompt.format_messages(query=query)
-        response = self.llm.invoke(messages)
-        return response.content.strip()
+        try:
+            history_str = self._format_history_for_rewrite(history)
+            messages = self.rewrite_prompt.format_messages(
+                query=query, 
+                history=history_str
+            )
+            response = self.llm.invoke(messages)
+            rewritten = response.content.strip('"').strip("'").strip()
+            
+            return rewritten if rewritten else query
+        
+        except Exception as e:
+            print(f"查询改写失败: {e}")
+            return query
     
     def _retrieve_docs(self, query: str) -> List[Dict]:
         """
@@ -90,6 +91,9 @@ class QASystem:
         """
         构建上下文
         """
+        if not docs:
+            return ""
+        
         blocks = []
         total = 0
         for i, doc in enumerate(docs, 1):
@@ -137,11 +141,11 @@ class QASystem:
     def answer(self, query: str, 
                history: Optional[List[Dict]] = None,
                eval_rerank: bool = False
-               ) -> tuple[Iterator[AIMessage], List[Dict]]:
+               ) -> Tuple[Optional[Iterator[AIMessage]], List[Dict]]:
         """
         返回答案生成器
         """
-        query = self._rewrite_query(query)
+        query = self._rewrite_query(query, history)
         candidates = self._retrieve_docs(query)
         reranked = self._rerank_docs(query, candidates)
         # 如果是评测重排序效果, 则直接返回重排序结果, 不生成答案
