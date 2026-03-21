@@ -6,11 +6,14 @@ import hashlib
 from pathlib import Path
 from typing import List, Dict
 from sentence_transformers import SentenceTransformer
-from src.config import get_model_path, EMBED_MODEL_NAME
+from src.config import (
+    get_model_path,
+    EMBED_MODEL_NAME,
+    BM25_DIR,
+    VECTOR_DIR
+)
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-BM25_PKL = PROJECT_ROOT / "data" / "index" / "bm25" / "bm25_index.pkl"
-VECTOR_DIR = PROJECT_ROOT / "data" / "index" / "vector"
+BM25_PKL = BM25_DIR / "bm25_index.pkl"
 EMBEDDING_NPY = VECTOR_DIR / "embeddings.npy"
 META_JSONL = VECTOR_DIR / "chunk_meta.jsonl"
 

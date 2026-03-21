@@ -4,15 +4,16 @@ from typing import List, Dict
 import numpy as np
 from sentence_transformers import SentenceTransformer
 import hashlib
+from src.config import (
+    get_model_path,
+    EMBED_MODEL_NAME,
+    PROCESSED_DIR,
+    VECTOR_DIR
+)
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-CHUNKS_JSONL = PROJECT_ROOT / "data" / "processed" / "chunks.jsonl"
-VECTOR_DIR = PROJECT_ROOT / "data" / "index" / "vector"
-
+CHUNKS_JSONL = PROCESSED_DIR / "chunks.jsonl"
 EMBEDDINGS_NPY = VECTOR_DIR / "embeddings.npy"
 META_JSONL = VECTOR_DIR / "chunk_meta.jsonl"
-
-EMBED_MODEL_NAME = "BAAI/bge-small-en-v1.5"
 
 def get_md5(text: str) -> str:
     """
@@ -86,7 +87,8 @@ def build_vector_index() -> None:
         return
 
     # 生成新文本块的嵌入
-    model = SentenceTransformer(EMBED_MODEL_NAME)
+    model_path = get_model_path(EMBED_MODEL_NAME)
+    model = SentenceTransformer(model_path)
     new_texts = [c["text"] for c in new_chunks]
     new_embeddings = model.encode(
         new_texts,

@@ -3,10 +3,10 @@ import pandas as pd
 import json
 from pathlib import Path
 from langchain_community.chat_models import ChatTongyi
+from src.config import DATA_DIR
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-CHUNK_JSONL = PROJECT_ROOT / "data" / "processed" / "chunks.jsonl"
-OUTPUT_DIR = PROJECT_ROOT / "data" / "eval"
+CHUNK_JSONL = DATA_DIR / "processed" / "chunks.jsonl"
+OUTPUT_DIR = DATA_DIR / "eval"
 
 def generate_test_set(chunk_path: Path = CHUNK_JSONL,
                    num_candidates: int = 50,

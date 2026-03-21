@@ -2,9 +2,9 @@ import json
 from pathlib import Path
 from typing import List, Dict
 from src.qa_service import QASystem
+from src.config import EVAL_DIR
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-TEST_JSON = PROJECT_ROOT / "data" / "eval" / "test_set_final.json"
+TEST_JSON = EVAL_DIR / "test_set_final.json"
 
 def load_test_set(path: Path):
     with path.open("r", encoding="utf-8") as f:

@@ -10,6 +10,8 @@ RAW_DIR = DATA_DIR / "raw"
 PROCESSED_DIR = DATA_DIR / "processed"
 INDEX_DIR = DATA_DIR / "index"
 EVAL_DIR = DATA_DIR / "eval"
+BM25_DIR = INDEX_DIR / "bm25"
+VECTOR_DIR = INDEX_DIR / "vector"
 
 # 模型缓存目录
 LOCAL_MODEL_DIR = DATA_DIR / "models"

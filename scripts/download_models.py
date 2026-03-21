@@ -3,10 +3,9 @@ import os
 from pathlib import Path
 from sentence_transformers import SentenceTransformer
 from sentence_transformers.cross_encoder import CrossEncoder
+from src.config import DATA_DIR
 
-# 设置项目路径
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-MODEL_DIR = PROJECT_ROOT / "data" / "models"
+MODEL_DIR = DATA_DIR / "models"
 
 def download_models():
     """下载所有需要的模型到本地"""
