@@ -3,6 +3,7 @@ from typing import List, Dict, Tuple, Iterator, Optional
 from langchain_community.chat_models import ChatTongyi
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import AIMessage, HumanMessage
+from langchain_community.chat_models import ChatOllama
 from src.retriever import HybridRetriever, BM25_PKL, EMBEDDING_NPY, META_JSONL
 from src.rerank import Reranker
 from src.prompts import QUERY_REWRITE_PROMPT, ANSWER_PROMPT
@@ -27,7 +28,8 @@ class QASystem:
         self.k = k
         self.context_max_chars = context_max_chars
 
-        self.llm = ChatTongyi(model="qwen3-max")
+        self.rewrite_llm = ChatOllama(model="qwen2.5:7b", temperature=0.1)
+        self.answer_llm = ChatTongyi(model="qwen3-max")
         self.retriever = HybridRetriever(
             bm25_path=BM25_PKL,
             embed_path=EMBEDDING_NPY,
@@ -66,7 +68,7 @@ class QASystem:
                 query=query, 
                 history=history_str
             )
-            response = self.llm.invoke(messages)
+            response = self.rewrite_llm.invoke(messages)
             rewritten = response.content.strip('"').strip("'").strip()
             
             return rewritten if rewritten else query
@@ -136,7 +138,7 @@ class QASystem:
             # 添加当前消息
             messages.extend(user_msgs)
 
-        return self.llm.stream(messages)
+        return self.answer_llm.stream(messages)
     
     def answer(self, query: str, 
                history: Optional[List[Dict]] = None,
