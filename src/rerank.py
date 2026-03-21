@@ -1,13 +1,15 @@
 from typing import Dict, List
 from sentence_transformers import CrossEncoder
+from src.config import get_model_path, RERANK_MODEL_NAME
 
 class Reranker:
     def __init__(self,
-                 model_name: str = "BAAI/bge-reranker-base",
+                 model_name: str = RERANK_MODEL_NAME,
                  batch_size: int = 32):
         self.model_name = model_name
         self.batch_size = batch_size
-        self.model = CrossEncoder(self.model_name)
+        model_path = get_model_path(self.model_name)
+        self.model = CrossEncoder(model_path)
 
     def rerank(self, query: str, candidates: List[Dict], top_k: int = 5) -> List[Dict]:
         """

@@ -6,6 +6,7 @@ import hashlib
 from pathlib import Path
 from typing import List, Dict
 from sentence_transformers import SentenceTransformer
+from src.config import get_model_path, EMBED_MODEL_NAME
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 BM25_PKL = PROJECT_ROOT / "data" / "index" / "bm25" / "bm25_index.pkl"
@@ -18,7 +19,7 @@ class HybridRetriever:
                  bm25_path: Path,
                  embed_path: Path,
                  meta_path: Path,
-                 model_name: str = "BAAI/bge-small-en-v1.5",
+                 model_name: str = EMBED_MODEL_NAME,
                  vector_weight: float = 0.5,
                  bm25_weight: float = 0.5,
                  k: int = 60):
@@ -41,7 +42,8 @@ class HybridRetriever:
 
     def _load_all(self) -> None:
         # 加载向量模型
-        self.model = SentenceTransformer(self.model_name)
+        model_path = get_model_path(self.model_name)
+        self.model = SentenceTransformer(model_path)
 
         # 加载BM25索引
         if not self.bm25_path.exists():
