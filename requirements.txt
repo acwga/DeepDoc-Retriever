@@ -1,0 +1,11 @@
+langchain>=0.1.0
+langchain-community
+langchain-core
+sentence-transformers
+pypdf
+numpy
+rank-bm25
+streamlit
+tqdm
+pandas
+dashscope
