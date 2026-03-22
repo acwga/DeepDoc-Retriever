@@ -1,5 +1,6 @@
 import streamlit as st
 from src.qa_service import QASystem
+import time
 
 # 页面配置
 st.set_page_config(
@@ -47,10 +48,16 @@ if st.button("确定", type="primary"):
 
         # 生成答案
         with st.spinner("模型思考中, 请稍侯..."):
+            start_time = time.time()
             answer_stream, reranked = qa.answer(query, history=st.session_state["history"])
             answer_placeholder = st.empty()
             answer_text = ""
+            first_token = True
             for msg in answer_stream:
+                if first_token:                              # 第一个 token 出现时
+                    elapsed_time = time.time() - start_time
+                    st.write(f"⏱️ 思考时间：{elapsed_time:.2f} 秒")
+                    first_token = False
                 answer_text += msg.content
                 answer_placeholder.write(answer_text, unsafe_allow_html=True)
             # 将模型回答添加到历史对话
