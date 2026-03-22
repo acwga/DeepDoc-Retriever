@@ -12,13 +12,14 @@
 ## 📊 性能表现
 在50个技术文档问题的测试集上：
 - **命中率@10**：84%
-- **MRR**：0.7123
-- **Precision@10**：0.0840（单文档标注的理论最大值为0.1）
+- **MRR**：0.7180
+- **Precision@10**：0.1680（单文档标注的理论最大值为0.2）
 
 ## 🛠️ 技术栈
 - **语言模型**：通义千问 qwen3-max
 - **向量模型**：SentenceTransformers（bge-small-en）
 - **重排序**：CrossEncoder（bge-reranker-base）
+- **查询重写**：qwen2.5:7b
 - **检索框架**：混合检索（向量+BM25）+ RRF融合
 - **前端界面**：Streamlit
 
@@ -26,20 +27,27 @@
 ```
 DeepDoc-Retriever/
 ├── src/
-|   ├── build_corpus.py    # 构建语料库和BM25索引
-|   ├── build_vector_index.py   # 构建向量索引
-|   ├── build_test_set.py  # 构建测试集
-│   ├── qa_service.py      # 问答系统主逻辑
-│   ├── retriever.py       # 混合检索实现
-│   ├── rerank.py          # 重排序实现
-|   ├── config.py          # 存放提示词
-|   └── eval_retrieval.py  # 检索评估评估
+│   ├── qa_service.py       # 问答系统主逻辑
+│   ├── retriever.py        # 混合检索实现
+│   ├── rerank.py           # 重排序实现
+|   ├── prompts.py          # 存放提示词
+|   └── config.py           # 配置文件
+|
+├── scripts/                    # 构建和工具脚本
+│   ├── build_corpus.py         # 构建语料库和BM25索引
+│   ├── build_vector_index.py   # 构建向量索引
+│   ├── build_test_set.py       # 构建测试集
+|   ├── download_models.py      # 下载模型到本地
+|   ├── optimize_weights.py     # 寻找最优超参
+│   └── eval_retrieval.py       # 检索评估
+|
 ├── data/
-│   ├── raw/               # 原始PDF/TXT文档
-│   ├── processed/         # 处理后的文档块
-│   ├── index/             # BM25和向量索引
-|   └── eval/              # 评估测试集
-└──  app.py                  # Streamlit界面
+│   ├── raw/                # 原始PDF/TXT文档
+│   ├── processed/          # 处理后的文档块
+│   ├── index/              # BM25和向量索引
+|   └── eval/               # 评估测试集
+├──  requirements           #配置文件
+└──  app.py                 # Streamlit界面
 ```
 
 ## 💡 核心亮点
@@ -48,6 +56,7 @@ DeepDoc-Retriever/
 3. **查询优化**：LLM改写问题，提高与英文技术文档的匹配度
 4. **可解释性**：答案附带引用文档，便于验证
 5. **性能优化**：使用MD5作为文档块唯一标识，降低内存占用，提升检索速度
+6. **最优参数搜索**: 通过网格搜索和精细搜索, 寻找最优超参
 
 ## 🎯 应用场景
 - 技术文档智能客服

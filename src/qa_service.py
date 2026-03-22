@@ -16,8 +16,8 @@ class QASystem:
     def __init__(self,
                  retrieve_k: int = 30,
                  final_k : int = 5,
-                 vector_weight: float = 0.7,
-                 bm25_weight: float = 0.3,
+                 vector_weight: float = 0.5,
+                 bm25_weight: float = 0.5,
                  k: int = 60,
                  context_max_chars: int = 2000
                  ):

@@ -10,7 +10,7 @@ def load_test_set(path: Path):
     with path.open("r", encoding="utf-8") as f:
         return json.load(f)
 
-def evaluate_retriever(test_set: List[Dict], qa_system: QASystem, top_k: int = 10):
+def evaluate_retriever(test_set: List[Dict], qa_system: QASystem, top_k: int = 5):
     total = len(test_set)
     hit_count = 0
     mrr_total = 0.0
@@ -48,5 +48,6 @@ def evaluate_retriever(test_set: List[Dict], qa_system: QASystem, top_k: int = 1
 
 if __name__ == "__main__":
     qa = QASystem()
+    qa.rewrite_llm
     test_set = load_test_set(TEST_JSON)
-    evaluate_retriever(test_set, qa, top_k=10)
+    evaluate_retriever(test_set, qa, top_k=5)
