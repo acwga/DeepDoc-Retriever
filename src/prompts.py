@@ -17,7 +17,16 @@ QUERY_REWRITE_PROMPT = ChatPromptTemplate.from_messages([
     ("human", "对话历史：{history}\n\n当前问题：{query}")
 ])
 
-# ==================== 答案生成（包含检索失败处理） ====================
+# ==================== 历史摘要 ====================
+
+SUMMARY_SYSTEM = """你是一个对话摘要助手，负责将用户与助手的对话历史进行总结。"""
+
+SUMMARY_PROMPT = ChatPromptTemplate.from_messages([
+    ("system", SUMMARY_SYSTEM),
+    ("human", "请将以下对话内容总结为一段简洁的摘要，保留关键信息（用户意图、已讨论的主题、重要结论等）：\n\n{dialogue}\n\n摘要：")
+])
+
+# ==================== 答案生成 ====================
 
 ANSWER_SYSTEM = """你是一个技术文档问答助手。
 
