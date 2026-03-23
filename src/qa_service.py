@@ -15,9 +15,9 @@ class QASystem:
     def __init__(self,
                  retrieve_k: int = 30,
                  final_k : int = 5,
-                 vector_weight: float = 0.5,
-                 bm25_weight: float = 0.5,
-                 k: int = 60,
+                 vector_weight: float = 0.6,
+                 bm25_weight: float = 0.4,
+                 k: int = 40,
                  context_max_chars: int = 2000,
                  max_window_size: int = 5,
                  summary_trigger: int = 10,
@@ -270,14 +270,14 @@ class QASystem:
         """
         返回答案生成器
         """
-        # # 意图识别
-        # use_rag = self._should_use_rag(query, history)
-        # if not use_rag:
-        #     # 非 RAG 路径：直接生成，不检索
-        #     if eval_rerank:
-        #         # 评测模式下，非 RAG 问题无检索结果
-        #         return None, []
-        #     return self._generate_answer_with_no_rag(query, history), []
+        # 意图识别
+        use_rag = self._should_use_rag(query, history)
+        if not use_rag:
+            # 非 RAG 路径：直接生成，不检索
+            if eval_rerank:
+                # 评测模式下，非 RAG 问题无检索结果
+                return None, []
+            return self._generate_answer_with_no_rag(query, history), []
 
         query = self._rewrite_query(query, history)
         candidates = self._retrieve_docs(query)
