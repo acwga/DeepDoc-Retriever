@@ -4,7 +4,8 @@ from langchain_core.messages import AIMessage, HumanMessage
 from langchain_community.chat_models import ChatOllama
 from src.retriever import HybridRetriever, BM25_PKL, EMBEDDING_NPY, META_JSONL
 from src.rerank import Reranker
-from src.prompts import QUERY_REWRITE_PROMPT, ANSWER_PROMPT, SUMMARY_PROMPT
+from src.prompts import QUERY_REWRITE_PROMPT, ANSWER_PROMPT, SUMMARY_PROMPT, INTENT_CLASSIFICATION_PROMPT
+import re
 
 class QASystem:
     """
@@ -20,7 +21,8 @@ class QASystem:
                  context_max_chars: int = 2000,
                  max_window_size: int = 5,
                  summary_trigger: int = 10,
-                 summary_llm = None
+                 summary_llm = None,
+                 use_llm_intent: bool = True
                  ):
         self.retrieve_k = retrieve_k    # 初始检索候选文档数量
         self.final_k = final_k          # 最终用于生成答案的文档数量
@@ -30,6 +32,7 @@ class QASystem:
         self.context_max_chars = context_max_chars  # 上下文最大字符数限制
         self.max_window_size = max_window_size  # 滑动窗口大小
         self.summary_trigger = summary_trigger  # 触发历史摘要的对话轮数阈值
+        self.use_llm_for_intent = use_llm_intent  # 是否使用 LLM 进行意图分类
 
         self.rewrite_llm = ChatOllama(model="qwen2.5:7b", temperature=0.1)  # 查询改写模型
         self.summary_llm = summary_llm or self.rewrite_llm  # 历史摘要模型, 默认与查询改写相同
@@ -48,6 +51,57 @@ class QASystem:
         self.rewrite_prompt = QUERY_REWRITE_PROMPT  # 查询改写提示词
         self.answer_prompt = ANSWER_PROMPT  # 答案生成提示词
         self.summary_prompt = SUMMARY_PROMPT    # 历史摘要提示词
+        self.intent_prompt = INTENT_CLASSIFICATION_PROMPT  # 意图分类提示词
+
+    def _should_use_rag(self, query: str, history: Optional[List[Dict]] = None) -> bool:
+        """
+        判断是否应该走 RAG 路径。
+        """
+        # 1. 规则快速过滤
+        if self._is_non_rag_by_rules(query):
+            return False
+
+        # 2. 用 LLM 判断
+        if self.use_llm_for_intent:
+            intent = self._classify_intent_with_llm(query, history)
+            return intent == "rag"
+
+        # 默认走 RAG（保守策略）
+        return True
+    
+    def _is_non_rag_by_rules(self, query: str) -> bool:
+        """基于规则的快速判断，匹配到即返回 True（不走 RAG）"""
+        query_lower = query.lower().strip()
+        # 问候、感谢、闲聊等关键词
+        non_rag_patterns = [
+            r"^(hi|hello|hey|你好|您好)$",
+            r"^(thanks?|thank you|谢谢|多谢)$",
+            r"^(who are you|你是谁|介绍一下你自己)$",
+            r"^(what can you do|你能做什么)$",
+            r"^(bye|goodbye|再见)$",
+            r"^(how are you|你好吗|最近怎么样)$",
+        ]
+        for pattern in non_rag_patterns:
+            if re.match(pattern, query_lower):
+                return True
+        return False
+    
+    def _classify_intent_with_llm(self, query: str, history: Optional[List[Dict]] = None) -> str:
+        """
+        使用 LLM 判断意图
+        """
+        # 将历史对话格式化为字符串
+        history_str = self._get_contextual_history(history) if history else "无"
+        messages = self.intent_prompt.format_messages(query=query, history=history_str)
+        try:
+            response = self.rewrite_llm.invoke(messages)
+            intent = response.content.strip().lower()
+            if intent in ("rag", "direct"):
+                return intent
+        except Exception as e:
+            print(f"意图分类失败: {e}")
+        # 保底走 RAG
+        return "rag"
 
     def _summarize_history(self, history: List[Dict]) -> str:
         """
@@ -170,8 +224,7 @@ class QASystem:
             blocks.append(block)
             total += len(block)
         return "\n".join(blocks)
-    
-    
+        
     def _generate_answer(self, query: str, docs: List[Dict], 
                          history: Optional[List[Dict]] = None) -> Iterator[AIMessage]:
         """
@@ -195,7 +248,21 @@ class QASystem:
             messages.extend(user_msgs)
 
         return self.answer_llm.stream(messages)
-    
+
+    def _generate_answer_with_no_rag(self, query: str, history: Optional[List[Dict]] = None) -> Iterator[AIMessage]:
+        """直接生成答案，不检索文档"""
+        context = ""
+        messages = self.answer_prompt.format_messages(query=query, context=context)
+        if history:
+            system_msg = messages[0]
+            user_msgs = messages[1:]
+            messages = [system_msg]
+            history_str = self._get_contextual_history(history)
+            if history_str.strip():
+                messages.append(HumanMessage(content=f"对话历史：\n{history_str}"))
+            messages.extend(user_msgs)
+        return self.answer_llm.stream(messages)
+
     def answer(self, query: str, 
                history: Optional[List[Dict]] = None,
                eval_rerank: bool = False
@@ -203,6 +270,15 @@ class QASystem:
         """
         返回答案生成器
         """
+        # # 意图识别
+        # use_rag = self._should_use_rag(query, history)
+        # if not use_rag:
+        #     # 非 RAG 路径：直接生成，不检索
+        #     if eval_rerank:
+        #         # 评测模式下，非 RAG 问题无检索结果
+        #         return None, []
+        #     return self._generate_answer_with_no_rag(query, history), []
+
         query = self._rewrite_query(query, history)
         candidates = self._retrieve_docs(query)
         reranked = self._rerank_docs(query, candidates)
