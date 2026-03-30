@@ -11,7 +11,7 @@ class Reranker:
         model_path = get_model_path(self.model_name)
         self.model = CrossEncoder(model_path)
 
-    def rerank(self, query: str, candidates: List[Dict], top_k: int = 5) -> List[Dict]:
+    def rerank(self, query: str, candidates: List[Dict], top_k: int = 5, threshold: float = None) -> List[Dict]:
         """
         重排序候选项
         """
@@ -33,6 +33,11 @@ class Reranker:
 
         # 根据分数排序
         reranked.sort(key=lambda x: x["rerank_score"], reverse=True)
+        
+        # 根据阈值过滤
+        if threshold is not None:
+            reranked = [doc for doc in reranked if doc["rerank_score"] >= threshold]
+
         return reranked[:top_k]
     
 if __name__ == "__main__":
